@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>KU Design Scholarship Finder</title>
+<meta name="description" content="KU design students answer a few private questions and see which verified scholarships fit them.">
+<style>
+/* Layout: KU Design Job Leads family. Nav bar, page head, answers panel on the left (sticky on desktop, collapsible on phones), matched scholarship cards on the right, dark footer */
+:root{
+  --bg:#FAFAFA;--fg:#262626;--card:#FFFFFF;--muted:#F0F2F5;--muted-fg:#666666;
+  --border:#E0E0E0;--primary:#0049B8;--primary-fg:#FFFFFF;--accent:#E6EFFF;--accent-fg:#0049B8;--ring:#0049B8;
+  --ku-gray:#333333;--foot-fg:#BDBDBD;--foot-hi:#FFFFFF;--foot-dim:#8A8A8A;
+  --ok-bg:#D1FAE5;--ok-fg:#065F46;--ok-bd:#A7F3D0;
+  --q-bg:#FEF3C7;--q-fg:#92400E;--q-bd:#FDE68A;
+  --no-bg:#F0F2F5;--no-fg:#6B6B6B;--no-bd:#E0E0E0;
+  --grp-bg:#EDE9FE;--grp-fg:#5B21B6;--grp-bd:#DDD6FE;
+  --radius:.5rem;
+  --font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121212;--fg:#F2F2F2;--card:#1A1A1A;--muted:#262626;--muted-fg:#A6A6A6;
+  --border:#333333;--primary:#3D86F5;--primary-fg:#FFFFFF;--accent:#1A3366;--accent-fg:#99C2FF;--ring:#3D86F5;
+  --ku-gray:#1F1F1F;
+  --ok-bg:#0F2F24;--ok-fg:#6EE7B7;--ok-bd:#14463A;
+  --q-bg:#35270B;--q-fg:#FCD34D;--q-bd:#4D3910;
+  --no-bg:#262626;--no-fg:#9A9A9A;--no-bd:#333333;
+  --grp-bg:#2A1F4A;--grp-fg:#C4B5FD;--grp-bd:#3B2C66;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121212;--fg:#F2F2F2;--card:#1A1A1A;--muted:#262626;--muted-fg:#A6A6A6;
+  --border:#333333;--primary:#3D86F5;--primary-fg:#FFFFFF;--accent:#1A3366;--accent-fg:#99C2FF;--ring:#3D86F5;
+  --ku-gray:#1F1F1F;
+  --ok-bg:#0F2F24;--ok-fg:#6EE7B7;--ok-bd:#14463A;
+  --q-bg:#35270B;--q-fg:#FCD34D;--q-bd:#4D3910;
+  --no-bg:#262626;--no-fg:#9A9A9A;--no-bd:#333333;
+  --grp-bg:#2A1F4A;--grp-fg:#C4B5FD;--grp-bd:#3B2C66;
+  color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.i{width:1rem;height:1rem;flex:none;display:inline-block;vertical-align:middle}
+.i-sm{width:.875rem;height:.875rem}.i-lg{width:1.5rem;height:1.5rem}.i-md{width:1.25rem;height:1.25rem}
+.wrapx{max-width:80rem;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#root{display:flex;flex-direction:column;min-height:100vh}
+.nav{border-bottom:1px solid var(--border);background:var(--card)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:.75rem}
+.brand{display:flex;align-items:center;gap:.5rem;font-size:1.25rem;font-weight:700;letter-spacing:-.025em;text-decoration:none}
+.brand .i{color:var(--primary)}
+.private{display:flex;align-items:center;gap:.375rem;font-size:.8125rem;color:var(--muted-fg)}
+main{width:100%;flex:1;padding-block:1.5rem 4rem}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:1.5rem}
+h1{font-size:1.875rem;line-height:2.25rem;font-weight:700;letter-spacing:-.025em;margin:0;text-wrap:balance}
+.lede{color:var(--muted-fg);margin:.375rem 0 0;max-width:62ch}
+.head-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.375rem;white-space:nowrap;border-radius:calc(var(--radius) - 2px);font-size:.875rem;font-weight:500;height:2.25rem;padding:0 .75rem;border:1px solid transparent;background:transparent;cursor:pointer;text-decoration:none;transition:background-color .15s,color .15s}
+.btn-outline{border-color:var(--border);background:var(--card)}
+.btn-outline:hover{background:var(--accent);color:var(--accent-fg)}
+.btn-primary{background:var(--primary);color:var(--primary-fg)}
+.btn-primary:hover{background:color-mix(in srgb,var(--primary) 88%,transparent)}
+.btn-sm{height:1.875rem;padding:0 .625rem;font-size:.8125rem}
+.layout{display:grid;gap:1.5rem;grid-template-columns:minmax(0,1fr)}
+@media (min-width:1024px){.layout{grid-template-columns:23rem minmax(0,1fr);align-items:start}.side{position:sticky;top:1rem;max-height:calc(100vh - 2rem);overflow-y:auto}}
+/* answers panel */
+.panel{border:1px solid var(--border);background:var(--card);border-radius:var(--radius)}
+.panel>summary{list-style:none;display:flex;align-items:center;gap:.5rem;padding:.875rem 1rem;cursor:pointer;font-weight:600}
+.panel>summary::-webkit-details-marker{display:none}
+.panel>summary .prog{margin-left:auto;font-size:.8125rem;font-weight:500;color:var(--muted-fg);font-variant-numeric:tabular-nums}
+.panel>summary .chev{transition:transform .15s;color:var(--muted-fg)}
+.panel[open]>summary .chev{transform:rotate(180deg)}
+.bar{height:4px;background:var(--muted);margin:0 1rem;border-radius:9999px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--primary);transition:width .2s}
+.form{padding:1rem;display:grid;gap:1.25rem}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:.875rem;min-width:0}
+fieldset+fieldset{border-top:1px solid var(--border);padding-top:1.25rem}
+legend{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg);padding:0;margin-bottom:.125rem}
+.q{display:grid;gap:.4rem;scroll-margin-top:1rem}
+.q.flash{animation:flash 1.2s ease-out}
+@keyframes flash{0%,40%{background:var(--q-bg)}100%{background:transparent}}
+.q-label{font-size:.875rem;font-weight:500}
+.q-hint{font-size:.75rem;color:var(--muted-fg);margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:.375rem}
+.chip{display:inline-flex;align-items:center;gap:.375rem;border:1px solid var(--border);border-radius:9999px;padding:.25rem .7rem;font-size:.8125rem;cursor:pointer;user-select:none;background:var(--card);transition:background-color .15s,border-color .15s}
+.chip:hover{border-color:var(--primary)}
+.chip input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.chip:has(input:checked){border-color:var(--primary);background:var(--accent);color:var(--accent-fg);font-weight:500}
+.chip:has(input:focus-visible){outline:2px solid var(--ring);outline-offset:2px}
+.chip .tick{display:none}
+.chip:has(input:checked) .tick{display:inline-block}
+.optional{font-size:.75rem;color:var(--muted-fg);background:var(--muted);border-radius:calc(var(--radius) - 2px);padding:.5rem .625rem;margin:0}
+/* results */
+.results{display:grid;gap:1rem;min-width:0;grid-template-columns:minmax(0,1fr)}
+.results>*,.side{min-width:0}
+.tabs{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem}
+.seg{display:inline-flex;gap:.25rem;border:1px solid var(--border);border-radius:calc(var(--radius) - 2px);padding:.125rem;max-width:100%;overflow-x:auto;scrollbar-width:none;background:var(--card)}
+.seg::-webkit-scrollbar{display:none}
+.seg .btn{height:2rem}
+.seg .btn[aria-pressed="true"]{background:var(--primary);color:var(--primary-fg)}
+.seg .n{font-variant-numeric:tabular-nums;opacity:.8}
+.settle{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;font-size:.8125rem;color:var(--muted-fg)}
+.settle button{border:1px dashed var(--q-bd);background:var(--q-bg);color:var(--q-fg);border-radius:9999px;padding:.125rem .625rem;font-size:.8125rem;cursor:pointer}
+.settle button:hover{border-style:solid}
+.soon{display:flex;align-items:flex-start;gap:.5rem;border:1px solid var(--q-bd);background:var(--q-bg);color:var(--q-fg);border-radius:var(--radius);padding:.625rem .875rem;font-size:.875rem}
+.soon .i{margin-top:.2rem}
+.soon b{font-weight:600}
+.list{display:grid;gap:.75rem}
+.card{border:1px solid var(--border);background:var(--card);border-radius:var(--radius);padding:1rem;display:grid;gap:.625rem;min-width:0}
+.card.st-no{background:transparent}
+.card.st-no h3,.card.st-no .sum{color:var(--muted-fg)}
+.card-top{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:.25rem;border:1px solid var(--border);border-radius:9999px;padding:.0625rem .5rem;font-size:.75rem;font-weight:500;line-height:1.25rem;white-space:nowrap;color:var(--muted-fg)}
+.pill{display:inline-flex;align-items:center;gap:.3rem;border-radius:9999px;padding:.0625rem .55rem;font-size:.75rem;font-weight:600;line-height:1.25rem;border:1px solid}
+.pill.likely{background:var(--ok-bg);color:var(--ok-fg);border-color:var(--ok-bd)}
+.pill.maybe{background:var(--q-bg);color:var(--q-fg);border-color:var(--q-bd)}
+.pill.no{background:var(--no-bg);color:var(--no-fg);border-color:var(--no-bd)}
+.pill.group{background:var(--grp-bg);color:var(--grp-fg);border-color:var(--grp-bd)}
+.due{margin-left:auto;display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--muted-fg);font-variant-numeric:tabular-nums;white-space:nowrap}
+.due.soon-due{color:var(--q-fg);font-weight:600}
+.due .est{border:1px dashed var(--border);border-radius:9999px;padding:0 .375rem;font-size:.6875rem}
+.card h3{font-size:1.0625rem;line-height:1.3;font-weight:700;margin:0;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:.25rem 1rem;font-size:.8125rem;color:var(--muted-fg)}
+.meta span{display:inline-flex;align-items:center;gap:.3rem}
+.meta b{color:var(--fg);font-weight:600}
+.sum{margin:0;font-size:.875rem;max-width:72ch}
+.reqs{display:flex;flex-wrap:wrap;gap:.375rem;list-style:none;margin:0;padding:0}
+.req{display:inline-flex;align-items:center;gap:.3rem;border-radius:calc(var(--radius) - 2px);padding:.1875rem .5rem;font-size:.75rem;border:1px solid}
+.req.y{background:var(--ok-bg);color:var(--ok-fg);border-color:var(--ok-bd)}
+.req.u{background:transparent;color:var(--q-fg);border-color:var(--q-bd);border-style:dashed}
+.req.n{background:var(--no-bg);color:var(--no-fg);border-color:var(--no-bd);text-decoration:line-through;text-decoration-thickness:1px}
+.req button{all:unset;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.card-foot{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;border-top:1px solid var(--border);padding-top:.625rem}
+.how{font-size:.75rem;color:var(--muted-fg);margin:0;flex:1 1 16rem;min-width:0}
+.how b{color:var(--fg);font-weight:600}
+.link{display:inline-flex;align-items:center;gap:.3rem;font-size:.8125rem;font-weight:500;color:var(--primary);text-decoration:none;margin-left:auto}
+.link:hover{text-decoration:underline}
+.group-box{border:1px dashed var(--grp-bd);border-radius:var(--radius);background:color-mix(in srgb,var(--grp-bg) 35%,transparent)}
+.group-box>summary{list-style:none;cursor:pointer;padding:.75rem 1rem;display:flex;align-items:center;gap:.5rem;font-size:.875rem;font-weight:600;color:var(--grp-fg)}
+.group-box>summary::-webkit-details-marker{display:none}
+.group-box>summary .chev{margin-left:auto;transition:transform .15s}
+.group-box[open]>summary .chev{transform:rotate(180deg)}
+.group-box .inner{padding:0 1rem 1rem;display:grid;gap:.75rem}
+.group-box .inner>p{margin:0;font-size:.8125rem;color:var(--muted-fg)}
+.empty{padding:2.5rem 1rem;text-align:center;color:var(--muted-fg);border:1px dashed var(--border);border-radius:var(--radius);font-size:.875rem}
+/* prep + ukash */
+.side-cards{display:grid;gap:1rem}
+@media (min-width:768px){.side-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.box{border:1px solid var(--border);background:var(--card);border-radius:var(--radius);padding:1rem;display:grid;gap:.625rem;align-content:start;min-width:0}
+.box h2{font-size:1rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem}
+.box h2 .i{color:var(--primary)}
+.box>p{margin:0;font-size:.8125rem;color:var(--muted-fg)}
+.todo{list-style:none;margin:0;padding:0;display:grid;gap:.5rem}
+.todo li{display:grid;grid-template-columns:1.25rem minmax(0,1fr);gap:.5rem;font-size:.875rem;align-items:start}
+.todo .box-i{width:1.125rem;height:1.125rem;border:1.5px solid var(--border);border-radius:4px;margin-top:.15rem;display:flex;align-items:center;justify-content:center}
+.todo li.done .box-i{background:var(--ok-fg);border-color:var(--ok-fg);color:var(--card)}
+.todo li.done .t{color:var(--muted-fg);text-decoration:line-through}
+.todo small{display:block;font-size:.75rem;color:var(--muted-fg)}
+.qs{margin:0;padding-left:1.1rem;font-size:.8125rem;display:grid;gap:.25rem}
+footer{border-top:1px solid var(--border);background:var(--ku-gray);color:var(--foot-fg)}
+.foot-inner{padding-block:2.5rem}
+.foot-grid{display:grid;grid-template-columns:1fr;gap:2rem}
+@media (min-width:640px){.foot-grid{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1024px){.foot-grid{grid-template-columns:2fr 1fr 1fr}}
+.foot-brand{display:flex;align-items:center;gap:.5rem;color:var(--foot-hi);font-weight:700;margin-bottom:.75rem}
+.foot-grid p{font-size:.875rem;margin:0;max-width:28rem}
+.foot-grid p+p{margin-top:.75rem}
+.foot-dim{color:var(--foot-dim)}
+.foot-grid h4{margin:0 0 .75rem;font-size:.875rem;font-weight:600;color:var(--foot-hi);text-transform:uppercase;letter-spacing:.05em}
+.foot-grid ul{list-style:none;margin:0;padding:0;font-size:.875rem}
+.foot-grid li+li{margin-top:.5rem}
+.foot-grid a{text-decoration:none;color:var(--foot-fg)}
+.foot-grid a:hover{color:var(--foot-hi)}
+.foot-copy{margin-top:2rem;border-top:1px solid rgba(166,166,166,.2);padding-top:1.5rem;text-align:center;font-size:.75rem;color:var(--foot-dim)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){.private span{display:none}h1{font-size:1.5rem;line-height:2rem}}
+</style>
+</head>
+<body>
+
+<div id="root">
+  <header class="nav"><div class="wrapx nav-inner">
+    <a class="brand" href="#" id="brand"><svg class="i i-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg><span>KU Design Scholarships</span></a>
+    <div class="private"><svg class="i i-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Your answers stay in this browser</span></div>
+  </div></header>
+  <main class="wrapx">
+    <div class="head">
+      <div>
+        <h1>Find the scholarships you qualify for</h1>
+        <p class="lede">Answer what you know. Each scholarship shows which requirements you meet, which ones you still need to check, and what to get ready. Skip anything you'd rather not answer.</p>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-outline" id="example" type="button">Try an example student</button>
+        <button class="btn btn-outline" id="clear" type="button">Clear my answers</button>
+      </div>
+    </div>
+    <div class="layout">
+      <aside class="side">
+        <details class="panel" id="panel" open>
+          <summary><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Your answers<span class="prog" id="prog"></span><svg class="i chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+          <div class="bar"><span id="barfill" style="width:0"></span></div>
+          <form class="form" id="form" autocomplete="off"></form>
+        </details>
+      </aside>
+      <section class="results" aria-live="polite">
+        <div class="tabs"><div class="seg" id="seg" role="group" aria-label="Show"></div></div>
+        <div class="settle" id="settle"></div>
+        <div id="soon"></div>
+        <div class="list" id="list"></div>
+        <div class="side-cards">
+          <div class="box" id="prep"></div>
+          <div class="box" id="ukash"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer><div class="wrapx foot-inner">
+    <div class="foot-grid">
+      <div><div class="foot-brand"><svg class="i i-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>KU Design Scholarships</div><p>A match here means you meet the basic requirements listed on each scholarship's official page. It isn't a promise of eligibility. Read the official rules before you apply. Dates marked "est." follow last year's cycle and will move.</p><p class="foot-dim">Collected for KU Department of Design students, November 2026. Each scholarship was confirmed running a 2025–26 or 2026–27 cycle. Your answers stay in this browser.</p></div>
+      <div><h4>Students</h4><ul><li><a href="https://kansas.design/">All student resources</a></li><li><a href="https://jobs.kansas.design/">KU Design Job Leads</a></li><li><a href="https://comps.kansas.design/">KU Design Competitions and Events</a></li><li><a href="https://ku.academicworks.com/opportunities" target="_blank" rel="noopener noreferrer">KU Scholarship Hub (UKASH)</a></li></ul></div>
+      <div><h4>Program</h4><ul><li><a href="https://design.ku.edu/" target="_blank" rel="noopener noreferrer">KU Department of Design</a></li></ul></div>
+    </div>
+    <div class="foot-copy">&copy; <span class="yr">2026</span> KU Design. All rights reserved.</div>
+  </div></footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var KEY="ku-design-schol-profile";
+var TODAY=new Date();TODAY.setHours(0,0,0,0);
+
+var ICONS={
+ check:'<path d="M20 6 9 17l-5-5"/>',
+ help:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+ x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+ cal:'<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+ ext:'<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+ dollar:'<line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+ bldg:'<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/>',
+ alarm:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/>',
+ list:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+ pen:'<path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/>',
+ users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+ chev:'<path d="m6 9 6 6 6-6"/>'
+};
+function icon(n,c){return '<svg class="i '+(c||"")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[n]+"</svg>"}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+/* ---------- Questions ---------- */
+var Q=[
+ {sec:"School",items:[
+  {k:"year",label:"Your class standing now",single:1,opts:[["fr","First-year"],["so","Sophomore"],["jr","Junior"],["sr","Senior"],["gr","Just graduated"]]},
+  {k:"areas",label:"Your area",hint:"Pick all that apply.",opts:[["visc","Visual Communication"],["ixd","Interaction Design"],["illus","Illustration"],["anim","Animation"],["id","Industrial Design"]]},
+  {k:"ft",label:"Enrolled full time?",single:1,opts:[["y","Yes"],["n","No"]]},
+  {k:"gpa",label:"Your GPA",hint:"A range is enough.",single:1,opts:[["lt25","Under 2.5"],["25","2.5–2.99"],["30","3.0–3.29"],["33","3.3–3.49"],["35","3.5 or higher"]]}
+ ]},
+ {sec:"Where you're from",items:[
+  {k:"cit",label:"Citizenship",single:1,opts:[["us","US citizen"],["pr","Permanent resident"],["daca","DACA"],["intl","International student"]]},
+  {k:"state",label:"Home state",single:1,opts:[["ks","Kansas"],["mo","Missouri"],["other","Another state"]]},
+  {k:"kc",label:"From the Kansas City area?",single:1,opts:[["y","Yes"],["n","No"]]}
+ ]},
+ {sec:"Paying for school",items:[
+  {k:"fafsa",label:"Filed the FAFSA for next year?",hint:"Many awards use it to measure need, even merit ones.",single:1,opts:[["y","Yes"],["n","Not yet"]]},
+  {k:"pell",label:"Do you get a Pell Grant?",hint:"It's listed on your KU financial aid award.",single:1,opts:[["y","Yes"],["n","No"],["u","Not sure"]]}
+ ]},
+ {sec:"Plans",items:[
+  {k:"plans",label:"I'm interested in",hint:"Pick all that apply.",opts:[["abroad","Studying abroad"],["intern","A paid summer agency internship"],["project","My own research or creative project"],["grad","Grad school after KU"],["lang","Learning a less-common language"]]},
+  {k:"before",label:"Already studied abroad since high school?",single:1,opts:[["y","Yes"],["n","No"]]}
+ ]},
+ {sec:"Show me awards for",optional:"Optional. These only change what this page shows you, and they're never sent anywhere.",items:[
+  {k:"bg",label:"Check any that describe you",opts:[["firstgen","First-generation college student"],["hisp","Hispanic or Latino/a"],["bipoc","Black, Indigenous or a person of color"],["wnb","A woman or nonbinary"],["lgbtq","LGBTQ+"],["imm","An immigrant or child of immigrants"],["kstch","Child of a Kansas teacher or para"],["kssch","Named a Kansas State Scholar in high school"]]}
+ ]}
+];
+var FIELD_LABEL={year:"class standing",areas:"your area",ft:"full-time status",gpa:"GPA",cit:"citizenship",state:"home state",kc:"Kansas City area",fafsa:"FAFSA",pell:"Pell Grant",plans:"plans",before:"studied abroad before"};
+var MULTI={areas:1,plans:1,bg:1};
+var CORE=["year","areas","ft","gpa","cit","state","kc","fafsa","pell","plans","before"];
+
+/* ---------- Profile ---------- */
+function blank(){return{year:"",areas:[],ft:"",gpa:"",cit:"",state:"",kc:"",fafsa:"",pell:"",plans:[],before:"",bg:[]}}
+var P=blank();
+try{var saved=JSON.parse(localStorage.getItem(KEY)||"null");if(saved&&typeof saved==="object"){P=Object.assign(blank(),saved)}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}}
+var EXAMPLE={year:"jr",areas:["visc","ixd"],ft:"y",gpa:"33",cit:"us",state:"ks",kc:"n",fafsa:"y",pell:"u",plans:["abroad","intern"],before:"n",bg:[]};
+
+/* ---------- Requirement helpers: each returns {t:true|false|null,label,f,kind} ---------- */
+var GPAV={lt25:2.0,"25":2.5,"30":3.0,"33":3.3,"35":3.5};
+var YEARL={fr:"first-year",so:"sophomore",jr:"junior",sr:"senior",gr:"recent grad"};
+function R(t,label,f,kind){return{t:t,label:label,f:f,kind:kind||"basic"}}
+function year(ys,label){return R(P.year?ys.indexOf(P.year)>-1:null,label,"year")}
+function area(as,label){return R(P.areas.length?as.some(function(a){return P.areas.indexOf(a)>-1}):null,label,"areas")}
+function gpa(min){return R(P.gpa?GPAV[P.gpa]>=min:null,min.toFixed(1)+"+ GPA","gpa")}
+function ft(){return R(P.ft?P.ft==="y":null,"Full time","ft")}
+function cit(cs,label){return R(P.cit?cs.indexOf(P.cit)>-1:null,label,"cit")}
+function fafsa(label){return R(P.fafsa?P.fafsa==="y":null,label||"FAFSA filed","fafsa")}
+function plan(p,label){return R(P.plans.indexOf(p)>-1?true:null,label,"plans","plan")}
+function bg(keys,label){return R(keys.some(function(k){return P.bg.indexOf(k)>-1})?true:null,label,"bg","id")}
+function always(label){return R(true,label,null)}
+
+/* ---------- Scholarships ---------- */
+/* date: next deadline (ISO) or null; est: projected from last cycle; when: text shown when no date */
+var S=[
+ {id:"ukash",cat:"KU",name:"KU Award & Scholarship Hub (UKASH)",org:"University of Kansas",amt:"$500–$6,000 per award",max:6000,date:"2026-11-15",est:false,when:"Awards close Nov through Feb",
+  url:"https://ku.academicworks.com/opportunities",
+  sum:"One general application matches you to most KU and School of Architecture & Design awards. Awards in the hub close on a rolling schedule from mid-November into February.",
+  how:"<b>Apply:</b> fill out the general application, then the hub recommends awards. Its essay questions are listed below.",
+  prep:["essays","fafsa","transcript"],reqs:function(){return[always("KU student"),fafsa("FAFSA helps (need-based awards)")]}},
+ {id:"jha",cat:"KU",name:"Jayhawks Abroad Scholarships",org:"KU Study Abroad",amt:"$500–$5,000",max:5000,date:"2027-02-15",est:false,
+  url:"https://studyabroad.ku.edu/ku-study-abroad-scholarships",
+  sum:"KU's own study abroad scholarships. Summer awards close Feb 15; academic-year and fall awards Mar 1; spring and break programs Oct 1.",
+  how:"<b>Apply:</b> through the study abroad portal with your program application. Merit awards need a 3.5 GPA; need-based awards need the FAFSA.",
+  prep:["fafsa"],reqs:function(){var t=null;if(P.fafsa==="y"||(P.gpa&&GPAV[P.gpa]>=3.5))t=true;else if(P.fafsa==="n"&&P.gpa&&GPAV[P.gpa]<3.5)t=false;return[plan("abroad","Planning to study abroad"),R(t,"FAFSA filed or 3.5+ GPA",P.fafsa?"gpa":"fafsa")]}},
+ {id:"arcd-abroad",cat:"KU",name:"School of Architecture & Design study abroad awards",org:"KU School of Architecture & Design",amt:"Varies",max:0,date:null,when:"Through UKASH",
+  url:"https://arcd.ku.edu/scholarships-affordability",
+  sum:"A group of named school funds (Achelpohl International, Lesnikowski Global, Wood Family Generations and others) that help pay for school-run programs abroad.",
+  how:"<b>Apply:</b> through the UKASH general application. Ask the School which programs they cover.",
+  prep:["essays"],reqs:function(){return[plan("abroad","Planning to study abroad"),always("A&D student")]}},
+ {id:"mo-recip",cat:"KU",name:"Missouri tuition reciprocity waiver",org:"KU School of Architecture & Design",amt:"Reduced tuition",max:0,date:null,when:"Notified late spring",
+  url:"https://arcd.ku.edu/scholarships-affordability",
+  sum:"A tuition waiver for Missouri residents in eligible School of Architecture & Design programs. Current waiver holders get first priority.",
+  how:"<b>Ask:</b> Joan Weaver (jweaver@ku.edu) which design programs qualify and how to be considered.",
+  prep:[],reqs:function(){return[R(P.state?P.state==="mo":null,"Missouri resident","state")]}},
+ {id:"ugra",cat:"KU",name:"KU Undergraduate Research Award",org:"KU Center for Undergraduate Research",amt:"$1,000",max:1000,date:"2027-03-26",est:true,when:"Late March",
+  url:"https://curf.ku.edu/undergraduate-research-awards",
+  sum:"$1,000 for a semester-long research or creative project with a faculty mentor. Creative work is judged on its own rubric, and you can upload a portfolio.",
+  how:"<b>Apply:</b> a short proposal with your mentor's support. Summer and fall awards are due in late March.",
+  prep:["mentor","portfolio"],reqs:function(){return[plan("project","A project of your own"),year(["fr","so","jr","sr"],"Current undergrad")]}},
+ {id:"self",cat:"KU",name:"Self Memorial Scholarship",org:"KU School of Architecture & Design",amt:"Varies",max:0,date:null,when:"Ask the School",
+  url:"https://arcd.ku.edu/scholarships-affordability",
+  sum:"A merit award for KU seniors starting a master's or PhD at KU the next fall, such as the MA in Design.",
+  how:"<b>Ask:</b> arcd@ku.edu or 785-864-4281 about timing.",
+  prep:["letters"],reqs:function(){return[year(["sr"],"Senior"),plan("grad","Grad school at KU")]}},
+ {id:"kcg",cat:"Kansas",name:"Kansas Comprehensive Grant",org:"Kansas Board of Regents",amt:"$100–$4,500 a year",max:4500,date:null,when:"File the FAFSA early",
+  url:"https://kansasregents.gov/resources/PDF/Students/Student_Financial_Aid/State_Aid_Brochure_2627.pdf",
+  sum:"State grant for Kansas residents with financial need. There's no separate application; the FAFSA triggers it, and funds run out, so earlier is better.",
+  how:"<b>Apply:</b> file the FAFSA. KU's financial aid office awards it.",
+  prep:["fafsa"],reqs:function(){return[R(P.state?P.state==="ks":null,"Kansas resident","state"),ft(),fafsa()]}},
+ {id:"keos",cat:"Kansas",name:"Kansas Education Opportunity Scholarship",org:"Kansas Board of Regents",amt:"Up to $1,850 a year",max:1850,date:"2027-05-01",est:true,
+  url:"https://kansasregents.gov/resources/PDF/Students/Student_Financial_Aid/State_Aid_Brochure_2627.pdf",
+  sum:"Need-based state award for first-generation students and children of Kansas pre-K–12 teachers or paraprofessionals. Renewable for four years.",
+  how:"<b>Apply:</b> the Kansas state aid application plus the FAFSA. Deadline May 1.",
+  prep:["fafsa"],reqs:function(){return[bg(["firstgen","kstch"],"First-gen or child of a Kansas teacher"),ft(),fafsa()]}},
+ {id:"kss",cat:"Kansas",name:"Kansas State Scholarship",org:"Kansas Board of Regents",amt:"Up to $1,000 a year",max:1000,date:"2027-07-01",est:true,
+  url:"https://kansasregents.gov/resources/PDF/Students/Student_Financial_Aid/State_Aid_Brochure_2627.pdf",
+  sum:"For students designated Kansas State Scholars in high school. Need-based and renewable for four years.",
+  how:"<b>Apply:</b> the Kansas state aid application plus the FAFSA. Deadline July 1.",
+  prep:["fafsa"],reqs:function(){return[bg(["kssch"],"Kansas State Scholar"),fafsa()]}},
+ {id:"kcws",cat:"Kansas",name:"Kansas Career Work Study",org:"Kansas Board of Regents",amt:"Paid part-time job",max:0,date:null,when:"Ask KU financial aid",
+  url:"https://kansasregents.gov/resources/PDF/Students/Student_Financial_Aid/State_Aid_Brochure_2627.pdf",
+  sum:"A part-time job, ideally related to your field, with the employer partly reimbursed by the state.",
+  how:"<b>Ask:</b> KU Financial Aid & Scholarships.",
+  prep:["fafsa"],reqs:function(){return[R(P.state?P.state==="ks":null,"Kansas resident","state"),fafsa()]}},
+ {id:"gkccf",cat:"Kansas City",name:"Greater Kansas City Community Foundation scholarships",org:"GKCCF",amt:"Varies by fund",max:0,date:"2027-01-15",est:true,when:"Opens January",
+  url:"https://www.growyourgiving.org/resources/scholarships/",
+  sum:"One general application matches you to dozens of donor funds for KC-area students. Most target high-school seniors, but some accept current college students.",
+  how:"<b>Apply:</b> the general application at gkccf.academicworks.com once the 2027–28 cycle opens (last cycle opened in early January).",
+  prep:["letters","essays","transcript","fafsa"],reqs:function(){return[R(P.kc?P.kc==="y":null,"From the KC area","kc")]}},
+ {id:"kcad",cat:"Kansas City",name:"KC Ad Club Foundation Scholarship",org:"KC Ad Club",amt:"$2,500 + mentor",max:2500,date:"2027-03-15",est:true,when:"Spring",
+  url:"https://kcadclub71.squarespace.com/foundation",
+  sum:"$2,500, a KC industry mentor and a free Ad Club membership for students in advertising, marketing or graphic arts. KU is an eligible school. Finalists interview in KC in April.",
+  how:"<b>Check first:</b> the page doesn't show this year's deadline. Email Foundation@KCAdClub.com.",
+  prep:["portfolio"],reqs:function(){return[year(["so","jr"],"Sophomore or junior"),area(["visc","ixd","illus"],"Graphic arts or advertising")]}},
+ {id:"tdc",cat:"Design",name:"TDC Scholarship Program",org:"Type Directors Club",amt:"$500–$1,000",max:1000,date:"2027-04-16",est:true,
+  url:"https://tdc.org/news/tdc-opens-2026-call-for-three-global-scholarship-programs/",
+  sum:"Nine scholarships for undergrads entering their senior year who show real skill in typography. Winners also get a TDC membership and the annual.",
+  how:"<b>Apply:</b> online with typography work samples. No fee was listed last cycle.",
+  prep:["typework","portfolio"],reqs:function(){return[year(["jr"],"Junior now (senior next fall)"),area(["visc","ixd","illus"],"Typography work")]}},
+ {id:"warde",cat:"Design",name:"TDC Beatrice Warde Scholarship",org:"Type Directors Club + Monotype",amt:"$5,000",max:5000,date:"2027-04-16",est:true,
+  url:"https://tdc.org/news/tdc-opens-2026-call-for-three-global-scholarship-programs/",
+  sum:"$5,000 for women and nonbinary students entering their junior year who show strong ability in typography, lettering or type design.",
+  how:"<b>Apply:</b> online with typography or lettering samples.",
+  prep:["typework","portfolio"],reqs:function(){return[bg(["wnb"],"Woman or nonbinary"),year(["so"],"Sophomore now (junior next fall)"),area(["visc","ixd","illus"],"Type or lettering work")]}},
+ {id:"hogue",cat:"Design",name:"TDC Adé Hogue Scholarship",org:"Type Directors Club + Monotype",amt:"$5,000",max:5000,date:"2027-04-16",est:true,
+  url:"https://tdc.org/news/tdc-opens-2026-call-for-three-global-scholarship-programs/",
+  sum:"$5,000 for BIPOC students entering their junior year, or their first year of grad school, who show promise in letterform design or use.",
+  how:"<b>Apply:</b> online with typography or lettering samples.",
+  prep:["typework","portfolio"],reqs:function(){var t=null;if(P.year==="so"||((P.year==="sr"||P.year==="gr")&&P.plans.indexOf("grad")>-1))t=true;else if(P.year&&P.year!=="sr"&&P.year!=="gr")t=false;return[bg(["bipoc"],"BIPOC"),R(t,"Sophomore now, or starting grad school","year"),area(["visc","ixd","illus"],"Type or lettering work")]}},
+ {id:"soi",cat:"Design",name:"Society of Illustrators Student Scholarship Competition",org:"Society of Illustrators",amt:"$250–$10,000",max:10000,date:"2027-02-26",est:true,when:"Call opens January",
+  url:"https://societyillustrators.org/student-scholarship/",
+  sum:"Over $60,000 in awards for US and Canadian undergrads in illustration and animation, plus a New York exhibition. Work must come from class assignments; no AI-generated work.",
+  how:"<b>Your professor submits</b> the work for you. $15 per image (less for members).",
+  prep:["faculty","portfolio"],reqs:function(){return[year(["fr","so","jr","sr"],"Current undergrad"),area(["illus","anim"],"Illustration or animation")]}},
+ {id:"spdu",cat:"Design",name:"SPD-U Student Competition",org:"Society of Publication Designers",amt:"$1,200 + mentorship",max:1200,date:"2027-03-19",est:true,
+  url:"https://www.spd.org/student-outreach/the-2026-spd-u-student-competition-is-now-open",
+  sum:"Editorial design, photography and illustration. Each first place gets $1,200 and a summer mentorship; runners-up get portfolio reviews.",
+  how:"<b>Enter:</b> online. $10 per entry; student members get three free.",
+  prep:["portfolio"],reqs:function(){return[year(["fr","so","jr","sr"],"Current student"),area(["visc","illus"],"Editorial design or illustration")]}},
+ {id:"idsa",cat:"Design",name:"IDSA Industrial Design Undergraduate Scholarship",org:"IDSA Design Foundation",amt:"$5,000",max:5000,date:"2027-10-08",est:true,when:"Opens Sept 1",
+  url:"https://www.idsadesignfoundation.org/scholarships",
+  sum:"$5,000 toward tuition for full-time US industrial design undergrads with at least one semester left. The 2026 round closed Oct 9.",
+  how:"<b>Apply:</b> online when it opens around Sept 1.",
+  prep:["portfolio","transcript"],reqs:function(){return[area(["id"],"Industrial Design"),ft(),gpa(3.0),year(["fr","so","jr","sr"],"A semester or more left")]}},
+ {id:"maip",cat:"Communities",name:"4A's Multicultural Advertising Intern Program (MAIP)",org:"4A's Foundation",amt:"Paid summer internship",max:0,date:"2027-01-08",est:false,
+  url:"https://www.aaaa.org/4as-foundation/maip/frequently-asked-questions/",
+  sum:"A summer fellowship placing students in paid agency internships, with art direction as one track. It's aimed at building a more diverse industry.",
+  how:"<b>Costs:</b> a $25 application fee, and a $1,000 program fee if selected. Below a 3.0 GPA you can add a statement.",
+  prep:["letters","essays","video","transcript","portfolio"],reqs:function(){var g=null;if(P.gpa)g=GPAV[P.gpa]>=3.0?true:null;return[year(["jr","sr","gr"],"Junior, senior or grad student"),cit(["us","pr","daca"],"Allowed to work in the US"),R(g,"3.0+ GPA (or a statement)","gpa"),plan("intern","Wants a summer agency internship")]}},
+ {id:"hsf",cat:"Communities",name:"Hispanic Scholarship Fund Scholar Program",org:"Hispanic Scholarship Fund",amt:"$500–$5,000",max:5000,date:"2027-02-15",est:true,
+  url:"https://www.hsf.net/scholarship/",
+  sum:"Need-based awards plus career support for students of Hispanic heritage at four-year schools.",
+  how:"<b>Apply:</b> online; it usually opens in winter.",
+  prep:["fafsa","essays","transcript"],reqs:function(){return[bg(["hisp"],"Hispanic or Latino/a"),cit(["us","pr","daca"],"Citizen, resident or DACA"),gpa(2.5),fafsa(),ft()]}},
+ {id:"point",cat:"Communities",name:"Point Foundation Flagship Scholarship",org:"Point Foundation",amt:"Need-based, renewable",max:0,date:"2026-11-20",est:true,when:"Late November",
+  url:"https://pointfoundation.org/scholarships/resources",
+  sum:"A renewable scholarship with mentoring for LGBTQ+ undergrad and grad students. Last year's deadline was Nov 20, so this year's round may be open now.",
+  how:"<b>Check the site now:</b> the deadline is usually late November.",
+  prep:["essays","letters","transcript"],reqs:function(){return[bg(["lgbtq"],"LGBTQ+"),gpa(3.3),ft()]}},
+ {id:"gilman",cat:"Abroad",name:"Gilman Scholarship",org:"US Department of State",amt:"Up to $5,000 (+$3,000 for a critical language)",max:8000,date:"2027-03-04",est:true,when:"Early March",
+  url:"https://fellowships.missouri.edu/fellowship/gilman",
+  sum:"For Pell Grant recipients studying or interning abroad. There are two rounds a year; the March round covers summer and fall programs.",
+  how:"<b>Apply:</b> online; KU Study Abroad can review drafts.",
+  prep:["essays"],reqs:function(){return[R(P.pell==="y"?true:P.pell==="n"?false:null,"Pell Grant","pell"),cit(["us"],"US citizen"),year(["fr","so","jr","sr"],"Undergrad"),plan("abroad","Planning to study abroad")]}},
+ {id:"fea",cat:"Abroad",name:"Fund for Education Abroad",org:"Fund for Education Abroad",amt:"$1,000–$5,000",max:5000,date:null,when:"Summer/fall round opens winter",
+  url:"https://fundforeducationabroad.org/wp-content/uploads/2026/05/Spring-2027-Application-Flyer.pdf",
+  sum:"For students with financial need going abroad for the first time on a credit-bearing program of 14 days or more.",
+  how:"<b>Watch for:</b> the summer/fall 2027 round. The spring round closed Sep 16.",
+  prep:["fafsa","essays"],reqs:function(){return[cit(["us","pr"],"US citizen or resident"),fafsa("Financial need (FAFSA)"),R(P.before?P.before==="n":null,"First time abroad","before"),plan("abroad","Planning to study abroad")]}},
+ {id:"boren",cat:"Abroad",name:"Boren Scholarship",org:"National Security Education Program",amt:"Up to $25,000",max:25000,date:"2027-01-29",est:false,
+  url:"https://academics.lmu.edu/onif/fellowships/requirescampussupport/boren/",
+  sum:"Large awards for studying a less-common language abroad. Requires at least a year of federal government work after graduation, which can suit IXD students drawn to civic and government UX.",
+  how:"<b>Apply through CURF,</b> whose campus deadline comes before Jan 29.",
+  prep:["curf","essays","language"],reqs:function(){return[cit(["us"],"US citizen"),plan("abroad","Planning to study abroad"),plan("lang","Learning a less-common language")]}},
+ {id:"gianninoto",cat:"Grad school",name:"IDSA Gianninoto Graduate Scholarship",org:"IDSA Design Foundation",amt:"$5,000",max:5000,date:"2027-10-08",est:true,when:"Opens Sept 1",
+  url:"https://www.idsadesignfoundation.org/scholarships",
+  sum:"$5,000 toward a US industrial design master's for final-year ID students applying to grad school.",
+  how:"<b>Apply:</b> online in the fall of senior year.",
+  prep:["portfolio","letters"],reqs:function(){return[area(["id"],"Industrial Design"),year(["sr","gr"],"Senior or recent grad"),plan("grad","Applying to grad school")]}},
+ {id:"fulbright",cat:"Grad school",name:"Fulbright US Student Program",org:"US Department of State",amt:"A funded year abroad",max:0,date:"2027-09-03",est:true,when:"KU deadline early Sept",
+  url:"https://curf.ku.edu/deadlines-events",
+  sum:"A year abroad to study, make a creative project or teach English. There's a dedicated arts category, and design students apply to it.",
+  how:"<b>Apply through CURF.</b> The KU campus deadline (Sep 3 last year) is about a month before the national one.",
+  prep:["curf","essays","letters","portfolio"],reqs:function(){return[year(["jr","sr","gr"],"Junior, senior or recent grad"),cit(["us"],"US citizen")]}},
+ {id:"beinecke",cat:"Grad school",name:"Beinecke Scholarship",org:"Sperry Fund",amt:"Grad school funding",max:0,date:"2027-02-14",est:true,when:"KU deadline mid-Feb",
+  url:"https://curf.ku.edu/deadlines-events",
+  sum:"Funds graduate study in the arts and humanities for juniors with financial need. KU nominates.",
+  how:"<b>Apply through CURF</b> by its campus deadline.",
+  prep:["curf","fafsa","essays","letters"],reqs:function(){return[year(["jr"],"Junior"),cit(["us"],"US citizen"),fafsa("Financial need (FAFSA)"),plan("grad","Planning grad school")]}},
+ {id:"soros",cat:"Grad school",name:"Paul & Daisy Soros Fellowship for New Americans",org:"PD Soros",amt:"Up to $90,000",max:90000,date:"2027-10-28",est:true,when:"Opens mid-April",
+  url:"https://www.pdsoros.org/apply/criteria",
+  sum:"Up to two years of grad school funding (stipend plus tuition) for immigrants and children of immigrants.",
+  how:"<b>Apply:</b> online; the application opens in mid-April.",
+  prep:["essays","letters"],reqs:function(){return[bg(["imm"],"Immigrant or child of immigrants"),year(["sr","gr"],"Senior or recent grad"),plan("grad","Starting grad school")]}},
+ {id:"kh",cat:"Grad school",name:"Knight-Hennessy Scholars",org:"Stanford University",amt:"Full funding",max:0,date:"2027-10-05",est:true,when:"Opens summer",
+  url:"https://knight-hennessy.stanford.edu/admission/preparing-your-applications/application-deadlines",
+  sum:"Full funding for any Stanford graduate program, including design.",
+  how:"<b>Apply:</b> separately from your Stanford program application, in early October.",
+  prep:["essays","letters","video"],reqs:function(){return[year(["sr","gr"],"Senior or recent grad"),plan("grad","Applying to grad school")]}}
+];
+
+/* ---------- Matching ---------- */
+function evaluate(s){
+  var rq=s.reqs(),st;
+  var no=rq.filter(function(r){return r.t===false});
+  var unk=rq.filter(function(r){return r.t===null});
+  if(no.length)st="no";
+  else if(unk.some(function(r){return r.kind==="id"}))st="group";
+  else if(unk.length)st="maybe";
+  else st="likely";
+  return{s:s,rq:rq,st:st,no:no,unk:unk};
+}
+function dateOf(s){return s.date?new Date(s.date+"T00:00:00"):null}
+function sortRes(a,b){var da=dateOf(a.s),db=dateOf(b.s);if(da&&db)return da-db;if(da)return -1;if(db)return 1;return a.s.name.localeCompare(b.s.name)}
+
+/* ---------- Form ---------- */
+var form=document.getElementById("form");
+function buildForm(){
+  form.innerHTML=Q.map(function(sec){
+    return '<fieldset><legend>'+esc(sec.sec)+'</legend>'+(sec.optional?'<p class="optional">'+esc(sec.optional)+'</p>':"")+
+     sec.items.map(function(q){
+      return '<div class="q" id="q-'+q.k+'" role="group" aria-labelledby="ql-'+q.k+'"><div class="q-label" id="ql-'+q.k+'">'+esc(q.label)+'</div>'+
+       (q.hint?'<p class="q-hint">'+esc(q.hint)+'</p>':"")+
+       '<div class="chips">'+q.opts.map(function(o){var id="f-"+q.k+"-"+o[0];
+         return '<label class="chip" for="'+id+'"><input type="checkbox" id="'+id+'" name="'+q.k+'" value="'+o[0]+'"'+(q.single?' data-single="1"':"")+'>'+icon("check","i-sm tick")+esc(o[1])+'</label>'}).join("")+
+       '</div></div>'}).join("")+'</fieldset>'}).join("");
+}
+function syncForm(){
+  form.querySelectorAll("input").forEach(function(inp){var v=P[inp.name];inp.checked=Array.isArray(v)?v.indexOf(inp.value)>-1:v===inp.value});
+}
+form.addEventListener("change",function(e){
+  var inp=e.target;if(!inp.name)return;
+  if(inp.dataset.single){
+    form.querySelectorAll('input[name="'+inp.name+'"]').forEach(function(o){if(o!==inp)o.checked=false});
+    P[inp.name]=inp.checked?inp.value:"";
+  }else{
+    P[inp.name]=Array.prototype.filter.call(form.querySelectorAll('input[name="'+inp.name+'"]'),function(o){return o.checked}).map(function(o){return o.value});
+  }
+  save();var ex=document.getElementById("exnote");if(ex)ex.remove();render();
+});
+
+/* ---------- Results ---------- */
+var view="likely";
+try{view=sessionStorage.getItem(KEY+"-view")||"likely"}catch(e){}
+var CATS={"KU":"KU","Kansas":"Kansas","Kansas City":"Kansas City","Design":"Design","Communities":"Communities","Abroad":"Study abroad","Grad school":"Grad school"};
+function fmtDate(d){var o={month:"short",day:"numeric"};if(d.getFullYear()!==TODAY.getFullYear())o.year="numeric";return d.toLocaleDateString("en-US",o)}
+function dueHTML(s){
+  var d=dateOf(s);
+  if(!d)return '<span class="due">'+icon("cal","i-sm")+esc(s.when||"Date not posted")+'</span>';
+  var days=Math.round((d-TODAY)/864e5);
+  var soon=days>=0&&days<=45;
+  var label=s.est?(s.when?esc(s.when)+" · ~"+fmtDate(d):"~"+fmtDate(d)):fmtDate(d)+(s.id==="ukash"?" + more":"");
+  return '<span class="due'+(soon?" soon-due":"")+'">'+icon(soon?"alarm":"cal","i-sm")+label+(s.est?' <span class="est" title="Estimated from last year">est.</span>':"")+(soon&&days>=0?" · "+(days===0?"today":days+" days"):"")+'</span>';
+}
+function pillHTML(r){
+  if(r.st==="likely")return '<span class="pill likely">'+icon("check","i-sm")+'You meet the basics</span>';
+  if(r.st==="maybe")return '<span class="pill maybe">'+icon("help","i-sm")+'Check '+r.unk.length+(r.unk.length===1?" thing":" things")+'</span>';
+  if(r.st==="group")return '<span class="pill group">'+icon("users","i-sm")+'For specific communities</span>';
+  return '<span class="pill no">'+icon("x","i-sm")+'Not a fit right now</span>';
+}
+function reqHTML(r){
+  var cls=r.t===true?"y":r.t===false?"n":"u",ic=r.t===true?"check":r.t===false?"x":"help";
+  var inner=esc(r.label);
+  if(r.t===null&&r.f&&r.f!=="bg")inner='<button type="button" data-go="'+r.f+'" title="Answer this question">'+esc(r.label)+'</button>';
+  return '<li class="req '+cls+'">'+icon(ic,"i-sm")+inner+'</li>';
+}
+function cardHTML(r){
+  var s=r.s;
+  return '<article class="card st-'+r.st+'"><div class="card-top"><span class="badge">'+esc(CATS[s.cat])+'</span>'+pillHTML(r)+dueHTML(s)+'</div>'+
+   '<h3>'+esc(s.name)+'</h3><div class="meta"><span>'+icon("bldg","i-sm")+esc(s.org)+'</span><span>'+icon("dollar","i-sm")+'<b>'+esc(s.amt)+'</b></span></div>'+
+   '<p class="sum">'+esc(s.sum)+'</p><ul class="reqs" aria-label="Requirements">'+r.rq.map(reqHTML).join("")+'</ul>'+
+   '<div class="card-foot"><p class="how">'+s.how+'</p><a class="link" href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">Official page'+icon("ext","i-sm")+'</a></div></article>';
+}
+function render(){
+  var res=S.map(evaluate).sort(sortRes);
+  var by={likely:[],maybe:[],group:[],no:[]};res.forEach(function(r){by[r.st].push(r)});
+  /* progress */
+  var answered=CORE.filter(function(k){return MULTI[k]?P[k].length:P[k]}).length;
+  document.getElementById("prog").textContent=answered+" of "+CORE.length+" answered";
+  document.getElementById("barfill").style.width=(answered/CORE.length*100)+"%";
+  /* tabs */
+  var tabs=[["likely","Likely fit",by.likely.length],["maybe","Worth checking",by.maybe.length+by.group.length],["all","All",S.length],["no","Not a fit",by.no.length]];
+  if(view!=="all"&&!tabs.some(function(t){return t[0]===view}))view="likely";
+  document.getElementById("seg").innerHTML=tabs.map(function(t){return '<button class="btn" type="button" data-view="'+t[0]+'" aria-pressed="'+(view===t[0])+'">'+t[1]+' <span class="n">'+t[2]+'</span></button>'}).join("");
+  /* settle hints */
+  var cnt={};by.maybe.forEach(function(r){var seen={};r.unk.forEach(function(u){if(u.f&&u.f!=="bg"&&!seen[u.f]){seen[u.f]=1;cnt[u.f]=(cnt[u.f]||0)+1}})});
+  var top=Object.keys(cnt).filter(function(k){return k!=="plans"}).sort(function(a,b){return cnt[b]-cnt[a]}).slice(0,3);
+  document.getElementById("settle").innerHTML=top.length?'Answer to sort more:'+top.map(function(k){return '<button type="button" data-go="'+k+'">'+esc(FIELD_LABEL[k])+' · '+cnt[k]+'</button>'}).join(""):"";
+  /* soon banner */
+  var soon=by.likely.concat(by.maybe).filter(function(r){var d=dateOf(r.s);if(!d)return false;var n=(d-TODAY)/864e5;return n>=0&&n<=45}).sort(sortRes);
+  document.getElementById("soon").innerHTML=soon.length?'<div class="soon">'+icon("alarm")+'<div><b>Coming up in the next 6 weeks:</b> '+soon.map(function(r){return esc(r.s.name.replace(/ \(.*\)$/,""))+" ("+fmtDate(dateOf(r.s))+(r.s.est?", est.":"")+")"}).join("; ")+'</div></div>':"";
+  /* list */
+  var list=document.getElementById("list"),html="";
+  if(view==="likely"){
+    html=by.likely.length?by.likely.map(cardHTML).join(""):'<div class="empty">Nothing is a sure match yet. Answer a few more questions, or look under <b>Worth checking</b>.</div>';
+  }else if(view==="maybe"){
+    html=by.maybe.length?by.maybe.map(cardHTML).join(""):'<div class="empty">Nothing left to check. Everything is sorted.</div>';
+    if(by.group.length)html+=groupHTML(by.group);
+  }else if(view==="no"){
+    html=by.no.length?by.no.map(cardHTML).join(""):'<div class="empty">Nothing is ruled out by your answers so far.</div>';
+  }else{
+    html=res.filter(function(r){return r.st!=="group"}).map(cardHTML).join("")+(by.group.length?groupHTML(by.group):"");
+  }
+  list.innerHTML=html;
+  renderPrep(by);renderUkash();
+}
+var groupOpen=false;
+function groupHTML(g){
+  return '<details class="group-box" id="groupbox"'+(groupOpen?" open":"")+'><summary>'+icon("users")+'Awards for specific communities ('+g.length+')'+icon("chev","chev")+'</summary><div class="inner"><p>Each of these is limited to a particular group. If one describes you, check it under <b>Show me awards for</b> and it will sort into your matches.</p>'+g.map(cardHTML).join("")+'</div></details>';
+}
+
+/* ---------- Prep checklist ---------- */
+var PREP={
+ fafsa:["File next year's FAFSA","Most need-based awards, and several merit ones, read it. File it once and it counts everywhere.",function(){return P.fafsa==="y"}],
+ essays:["Draft three reusable essays","Your background and goals; leadership, service or community work; your financial situation and what the money would pay for."],
+ portfolio:["Pick 6–10 finished pieces","Save high-res JPGs under 10 MB, and keep class-assignment work labeled by course."],
+ letters:["Line up two recommendation letters","Ask faculty at least three weeks ahead and send them your résumé and the deadline."],
+ transcript:["Save an unofficial transcript PDF","Download it from Enroll & Pay."],
+ typework:["Collect typography and lettering work","Type specimens, lettering, editorial spreads and identity systems all count."],
+ faculty:["Ask a professor to submit your work","Society of Illustrators only takes entries from faculty."],
+ mentor:["Find a faculty mentor for your project","The research award needs a mentor who supports your proposal."],
+ curf:["Meet with CURF early","Fulbright, Boren and Beinecke have KU campus deadlines weeks before the national ones."],
+ video:["Record a 2–3 minute video","MAIP and Knight-Hennessy ask for one."],
+ language:["Pick a language and program","Boren funds less-common languages such as Arabic, Mandarin, Korean, Portuguese and Swahili."]
+};
+function renderPrep(by){
+  var counts={};by.likely.concat(by.maybe).forEach(function(r){r.s.prep.forEach(function(k){counts[k]=(counts[k]||0)+1})});
+  var keys=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]});
+  document.getElementById("prep").innerHTML='<h2>'+icon("list")+'Get these ready</h2><p>Built from your likely and worth-checking matches. Most of it carries over from one application to the next.</p>'+
+   (keys.length?'<ul class="todo">'+keys.map(function(k){var p=PREP[k],done=p[2]&&p[2]();return '<li class="'+(done?"done":"")+'"><span class="box-i">'+(done?icon("check","i-sm"):"")+'</span><span><span class="t">'+esc(p[0])+'</span><small>'+esc(p[1])+' Needed for '+counts[k]+(counts[k]===1?" match":" matches")+'.</small></span></li>'}).join("")+'</ul>':'<p>Answer a few questions to build your list.</p>');
+}
+function renderUkash(){
+  document.getElementById("ukash").innerHTML='<h2>'+icon("pen")+'KU\'s hub asks these questions</h2><p>The UKASH general application uses your answers to recommend KU awards. Draft them once in a document and paste them in.</p>'+
+   '<ol class="qs"><li>Your background, experiences and qualities (10–15 sentences)</li><li>Your goals after graduating and how they shape your work</li><li>Community service, leadership, research or other experience</li><li>How you handle ethical questions; your key strengths</li><li>Your financial situation and how an award would help</li><li>What would happen without support; how much you need and what for (up to 250 words each)</li><li>Short answers: FAFSA filed, rural background, funding received before, courses left</li></ol>'+
+   '<p>Some hub awards close as early as mid-November, so don\'t wait for spring.</p><a class="link" style="margin-left:0" href="https://ku.academicworks.com/opportunities" target="_blank" rel="noopener noreferrer">Open the KU hub'+icon("ext","i-sm")+'</a>';
+}
+
+/* ---------- Events ---------- */
+document.addEventListener("click",function(e){
+  var v=e.target.closest("[data-view]");
+  if(v){view=v.dataset.view;try{sessionStorage.setItem(KEY+"-view",view)}catch(err){}render();return}
+  var g=e.target.closest("[data-go]");
+  if(g){var panel=document.getElementById("panel");panel.open=true;var q=document.getElementById("q-"+g.dataset.go);
+    if(q){q.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});q.classList.remove("flash");void q.offsetWidth;q.classList.add("flash");var f=q.querySelector("input");if(f)f.focus({preventScroll:true})}return}
+  if(e.target.closest("#groupbox summary")){setTimeout(function(){var gb=document.getElementById("groupbox");groupOpen=!!(gb&&gb.open)},0)}
+});
+document.getElementById("example").addEventListener("click",function(){P=Object.assign(blank(),JSON.parse(JSON.stringify(EXAMPLE)));save();syncForm();view="likely";render()});
+document.getElementById("clear").addEventListener("click",function(){var ex=document.getElementById("exnote");if(ex)ex.remove();P=blank();save();syncForm();view="likely";render()});
+document.getElementById("brand").addEventListener("click",function(e){e.preventDefault();window.scrollTo(0,0)});
+
+buildForm();
+/* first visit: show the example student so the page opens in a working state */
+var fresh=true;try{fresh=localStorage.getItem(KEY)===null}catch(e){}
+if(fresh){P=Object.assign(blank(),JSON.parse(JSON.stringify(EXAMPLE)))}
+syncForm();
+if(window.matchMedia&&!matchMedia("(min-width:1024px)").matches&&!fresh){document.getElementById("panel").open=false}
+render();
+if(fresh){var note=document.createElement("div");note.className="soon";note.id="exnote";note.style.marginBottom="1rem";note.innerHTML=icon("help")+'<div><b>You\'re seeing an example student</b> (a junior in VISC and IXD from Kansas). Change any answer, or use <b>Clear my answers</b> to start fresh.</div>';var head=document.querySelector(".layout");head.parentNode.insertBefore(note,head)}
+document.querySelectorAll(".yr").forEach(function(y){y.textContent=new Date().getFullYear()});
+})();
+</script>
+
+</body></html>
